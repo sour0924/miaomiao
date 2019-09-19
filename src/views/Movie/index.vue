@@ -6,7 +6,7 @@
             <div id="content">
                 <div class="movie_menu">
                     <router-link tag="div" to="/movie/city" class="city_name">
-                        <span>大连</span><i class="iconfont icon-lower-triangle"></i>
+                        <span>{{$store.state.city.nm}}</span><i class="iconfont icon-lower-triangle"></i>
                     </router-link>
                     <div class="hot_swtich">
                         <!--active 默认选中-->
@@ -27,17 +27,73 @@
 </template>
 
 <script>
-//这里可以导入其他文件（比如：组件，工具js，第三方插件js，json文件，图片文件等等）
-//例如：import 《组件名称》 from '《组件路径》';
 
+//引入组件
 import Header from '@/components/Header';
 import TabBar from '@/components/TabBar';
+import {messageBox} from '@/components/JS';
+
 
 export default {
     name : 'Movie',
     components : {
         Header,
         TabBar
+    },
+    mounted(){
+
+        //保证3秒后弹出
+        setTimeout(()=>{
+            //定位接口，一般是使用百度之类的API
+            this.axios.get('/api/getLocation').then((res)=>{
+                var msg = res.data.msg;
+                if(msg === 'ok'){
+                    
+                    var nm = res.data.data.nm;
+                    var id = res.data.data.id;
+                    //判断地址一致时，直接返回，无需切换/不一致则需点击切换
+                    //console.log(this.$store.state.city.id,id);
+                    //注意===和==区别
+                    if(this.$store.state.city.id == id){return;}
+                    messageBox({
+                        title : '定位',
+                        content : nm,
+                        cancel : '取消',
+                        ok : '切换定位',
+
+                        //点击方法
+                        /*
+                        handleCancel(){
+                            console.log(1111)
+                        },
+                        */
+                       //点击切换定位
+                        handleOk(){
+                            //console.log(2222)
+                            window.localStorage.setItem("nowNm",nm);
+                            window.localStorage.setItem("nowId",id);
+                            window.location.reload();//刷新
+                        }
+                    });
+                }
+            });
+        },3000);
+        
+
+        // messageBox({
+        //     title : '定位',
+        //     content : '洛阳',
+        //     cancel : '取消',
+        //     ok : '切换定位',
+
+        //     //点击方法
+        //     handleCancel(){
+        //         console.log(1111)
+        //     },
+        //     handleOk(){
+        //         console.log(2222)
+        //     }
+        // });
     }
 }
 </script>

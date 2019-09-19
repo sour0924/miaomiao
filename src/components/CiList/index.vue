@@ -1,36 +1,39 @@
 <!-- 影院组件 -->
 <template>
     <div class="cinema_body">
-        <ul>
-            <!-- <li>
-                <div>
-                    <span>大地影院(澳东世纪店)</span>
-                    <span class="q"><span class="price">22.9</span> 元起</span>
-                </div>
-                <div class="address">
-                    <span>金州区大连经济技术开发区澳东世纪3层</span>
-                    <span>1763.5km</span>
-                </div>
-                <div class="card">
-                    <div>小吃</div>
-                    <div>折扣卡</div>
-                </div>
-            </li> -->
-            <li v-for="item in cinemaList" :key="item.id">
-                <div>
-                    <span>{{item.nm}}</span>
-                    <span class="q"><span class="price">{{item.sellPrice}}</span> 元起</span>
-                </div>
-                <div class="address">
-                    <span>{{item.addr}}</span>
-                    <span>{{item.distance}}km</span>
-                </div>
-                <div class="card">
-                    <!--数据嵌套 item.tag-->
-                    <div v-for="(num,key) in item.tag" :key="key" v-if="num===1" :class="key | classCard">{{key | formatCard}}</div>
-                </div>
-            </li>
-        </ul>
+        <Loading v-if="isLoading"/><!--数据未加载-->
+        <Scroller v-else>
+            <ul>
+                <!-- <li>
+                    <div>
+                        <span>大地影院(澳东世纪店)</span>
+                        <span class="q"><span class="price">22.9</span> 元起</span>
+                    </div>
+                    <div class="address">
+                        <span>金州区大连经济技术开发区澳东世纪3层</span>
+                        <span>1763.5km</span>
+                    </div>
+                    <div class="card">
+                        <div>小吃</div>
+                        <div>折扣卡</div>
+                    </div>
+                </li> -->
+                <li v-for="item in cinemaList" :key="item.id">
+                    <div>
+                        <span>{{item.nm}}</span>
+                        <span class="q"><span class="price">{{item.sellPrice}}</span> 元起</span>
+                    </div>
+                    <div class="address">
+                        <span>{{item.addr}}</span>
+                        <span>{{item.distance}}km</span>
+                    </div>
+                    <div class="card">
+                        <!--数据嵌套 item.tag-->
+                        <div v-for="(num,key) in item.tag" :key="key" v-if="num===1" :class="key | classCard">{{key | formatCard}}</div>
+                    </div>
+                </li>
+            </ul>
+        </Scroller>
 	</div>
 </template>
 
@@ -39,14 +42,22 @@ export default {
     name : 'CiList',
     data(){
         return {
-            cinemaList : []
+            cinemaList : [],
+            isLoading : true,
+            prevCityId : -1 //城市切换
         }
     },
-    mounted(){
-        this.axios.get('/api/cinemaList?cityId=10').then((res)=>{
+    activated(){
+        //保证热映与即将上映切换不走ajax，地址切换的话走
+        var cityId = this.$store.state.city.id;
+        if(this.prevCityId === cityId){return;}
+        this.isLoading = true;
+        this.axios.get('/api/cinemaList?cityId='+cityId).then((res)=>{
             var msg = res.data.msg;
             if(msg =='ok'){
                 this.cinemaList = res.data.data.cinemas;
+                this.isLoading = false;
+                this.prevCityId = cityId;
             }
         });
     },
