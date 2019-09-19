@@ -31,21 +31,26 @@
         </div> -->
         <div class="city_list">
             <!--热门城市-->
-            <div class="city_hot">
-                <h2>热门城市</h2>
-                <ul class="clearfix">
-                    <li v-for="item in hotList" :key="item.id">{{item.nm}}</li>
-                </ul>
-            </div>
-            <!--分类-->
-            <div class="city_sort" ref="city_sort">
-                <div v-for="item in cityList" :key="item.index">
-                    <h2>{{ item.index }}</h2>
-                    <ul>
-                        <li v-for="itemList in item.list" :key="itemList.id">{{ itemList.nm }}</li>
-                    </ul>
+            <Loading v-if="isLoading"/><!--数据未加载-->
+            <Scroller v-else ref="city_list">
+                <div>
+                    <div class="city_hot">
+                        <h2>热门城市</h2>
+                        <ul class="clearfix">
+                            <li v-for="item in hotList" :key="item.id" @tap="handleToCity(item.nm,item.id)">{{item.nm}}</li>
+                        </ul>
+                    </div>
+                    <!--分类-->
+                    <div class="city_sort" ref="city_sort">
+                        <div v-for="item in cityList" :key="item.index">
+                            <h2>{{ item.index }}</h2>
+                            <ul>
+                                <li v-for="itemList in item.list" :key="itemList.id" @tap="handleToCity(itemList.nm,itemList.id)">{{ itemList.nm }}</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </Scroller>
         </div>
         <!--索引-->
         <div class="city_index">
@@ -63,22 +68,40 @@ export default {
     data(){
         return {
             cityList : [],
-            hotList : []
+            hotList : [],
+            isLoading : true
         }
     },
     mounted(){//引入数据
-        this.axios.get('/api/cityList').then((res)=>{
-            //原生对城市分组,先判断
-            var msg = res.data.msg;
-            if(msg == 'ok'){
-                var cities = res.data.data.cities;
-                //[{index : 'A',list : [{nm : '安庆' , id : 123}]}]
-                var { cityList,hotList } = this.formatCityList(cities);
-                this.cityList = cityList;
-                this.hotList = hotList;
-            }
 
-        });
+        var cityList = window.localStorage.getItem('cityList');
+        var hotList = window.localStorage.getItem('hotList');
+
+        //判断本地缓存是否存在，都存在则直接取
+        if(cityList && hotList){
+            this.cityList = JSON.parse(cityList);//转为json
+            this.hotList = JSON.parse(hotList);
+            this.isLoading = false;
+        }
+        else{
+            this.axios.get('/api/cityList').then((res)=>{
+                //原生对城市分组,先判断
+                var msg = res.data.msg;
+                if(msg === 'ok'){
+                    this.isLoading = false;
+                    var cities = res.data.data.cities;
+                    //[{index : 'A',list : [{nm : '安庆' , id : 123}]}]
+                    var { cityList,hotList } = this.formatCityList(cities);
+                    this.cityList = cityList;
+                    this.hotList = hotList;
+                    //本地存储，适合数据大，不经常变化的数据, 以字符串格式存储的，将json数据转换
+                    window.localStorage.setItem('cityList',JSON.stringify(cityList));
+                    window.localStorage.setItem('hotList',JSON.stringify(hotList));
+                }
+
+            });
+        }
+
     },
     methods : {
         formatCityList(cities){
@@ -140,7 +163,19 @@ export default {
         handleToIndex(index){
             var h2 = this.$refs.city_sort.getElementsByTagName('h2');
             //parentNode是外层的city_list
-            this.$refs.city_sort.parentNode.scrollTop = h2[index].offsetTop;
+            //Scroller管理后索引跳转不能用
+            //this.$refs.city_sort.parentNode.scrollTop = h2[index].offsetTop;
+            //改为
+            this.$refs.city_list.toScrollTop(-h2[index].offsetTop);
+        },
+        //点击城市
+        handleToCity(nm,id){
+            this.$store.commit('city/CITY_INFO',{nm,id});
+            //刷新记住所选城市,使用本地存储,初始时取出
+            window.localStorage.setItem('nowNm',nm);
+            window.localStorage.setItem('nowId',id);
+            //点击后跳转到热映
+            this.$router.push('/movie/nowPlaying');
         }
     }
 

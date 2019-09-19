@@ -55,14 +55,13 @@ export default {
     //使用watch监听输入框值 ,但是监听输入中，并不是输入结束搜索，需要函数防抖策略，避免结束前触发
     watch : {
         message(newVal){
-            
             this.cancelRequest();
 
             //注意 this 指向
             let that = this;
-
+            var cityId = this.$store.state.city.id;
             //console.log(newVal);测试是否获取输入的值
-            this.axios.get('/api/searchList?cityId=10&kw='+newVal,{
+            this.axios.get('/api/searchList?cityId='+cityId+'&kw='+newVal,{
                 cancelToken: new this.axios.CancelToken( function(c) {
                     //console.log(11111);//测试
                     that.source = c;})
