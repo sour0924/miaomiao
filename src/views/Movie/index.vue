@@ -1,4 +1,4 @@
-<!-- 影院组件页面 -->
+<!-- 影院页面 -->
 <template>
     <div id="main">
         <Header title="喵喵电影"/>
@@ -19,10 +19,11 @@
                 </div>
                 <!--二级内容渲染-->
                 <keep-alive>
-                    <router-view />
+                    <router-view /><!--二级路由-->
                 </keep-alive>
             </div>
         <TabBar />
+        <router-view name="detail" /><!--详情路由-->
     </div>
 </template>
 

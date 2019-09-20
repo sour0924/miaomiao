@@ -18,10 +18,11 @@
                 </li> -->
                 <li class="pullDown">{{pullDownMsg}}</li>
                 <li v-for="item in movieList" :key="item.id"><!--key唯一标识-->
-                    <!--点击图片触发事件handleToDetail-->
-                    <div class="pic_show" @tap="handleToDetail"><img :src="item.img | setWH('128.180')"></div>
+                    <!--点击图片触发事件handleToDetail，进入详情-->
+                    <div class="pic_show" @tap="handleToDetail(item.id)"><img :src="item.img | setWH('128.180')"></div>
                     <div class="info_list">
-                        <h2>{{item.nm}} <img v-if="item.version" src="@/assets/maxs.png" alt=""></h2>
+                        <!--@tap="handleToDetail()" 点击传id进入详情-->
+                        <h2 @tap="handleToDetail(item.id)">{{item.nm}} <img v-if="item.version" src="@/assets/maxs.png" alt=""></h2>
                         <p>观众评 <span class="grade">{{item.sc}}</span></p>
                         <p>主演: {{item.star}}</p>
                         <p>{{item.showInfo}}</p>
@@ -99,8 +100,10 @@ export default {
         });
     },
     methods : {
-        handleToDetail(){
-            console.log(123132);
+        //点击进入详情
+        handleToDetail(movieId){
+            //console.log(movieId);
+            this.$router.push('/movie/detail/1/'+movieId);
         },
 
         handleToScroll(pos){
