@@ -1,5 +1,7 @@
 module.exports = {
     //开发环境
+    //更改项目根路径后，配置资源路径
+    publicPath : '/miaomiao',
     devServer : {
         proxy : {
             //根据接口ip后名称

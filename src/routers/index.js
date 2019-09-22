@@ -9,7 +9,9 @@ Vue.use(Router)
 
 export default new Router({
   mode: 'history',
-  base: process.env.BASE_URL,
+  //默认路径
+  //base: process.env.BASE_URL,
+  base: 'miaomiao',//改为/项目名
   routes: [
     movieRouter,
     cinemaRouter,
